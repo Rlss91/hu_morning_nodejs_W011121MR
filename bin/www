@@ -7,7 +7,7 @@
 var app = require("../app");
 var debug = require("debug")("nodejs-project:server");
 var http = require("http");
-
+const chalk = require("chalk");
 /**
  * Get port from environment and store in Express.
  */
@@ -82,6 +82,6 @@ function onError(error) {
 function onListening() {
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
-  console.log("Listening on " + bind);
+  console.log("Listening on " + chalk.green.bold(bind));
   debug("Listening on " + bind);
 }
