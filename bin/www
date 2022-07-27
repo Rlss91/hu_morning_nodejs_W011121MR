@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-
+require("dotenv").config();
 var app = require("../app");
 var debug = require("debug")("nodejs-project:server");
 var http = require("http");
@@ -11,7 +11,7 @@ const chalk = require("chalk");
 /**
  * Get port from environment and store in Express.
  */
-
+console.log(process.env);
 var port = normalizePort(process.env.PORT || "3001");
 app.set("port", port);
 
