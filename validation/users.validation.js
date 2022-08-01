@@ -30,11 +30,19 @@ const signupSchema = Joi.object({
   ...lastnameRole,
   ...phoneRole,
 });
+const loginSchema = Joi.object({
+  ...emailRole,
+  ...passwordRole,
+});
 
 const validateSignupSchema = (data) => {
   return signupSchema.validateAsync(data, { abortEarly: false });
 };
+const validateLoginSchema = (data) => {
+  return loginSchema.validateAsync(data, { abortEarly: false });
+};
 
 module.exports = {
   validateSignupSchema,
+  validateLoginSchema,
 };
