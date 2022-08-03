@@ -4,6 +4,7 @@ const usersModule = require("../../models/users.model");
 const usersValidation = require("../../validation/users.validation");
 const bcrypt = require("../../config/bcrypt");
 const CustomResponse = require("../../classes/CustomResponse");
+const jwt = require("../../config/jwt");
 
 router.post("/signup", async (req, res) => {
   try {
@@ -12,7 +13,11 @@ router.post("/signup", async (req, res) => {
     const usersData = await usersModule.selectUserByEmail(validatedValue.email);
     if (usersData.length > 0) {
       // throw { status: "failed", msg: "email already exist" };
-      throw new CustomResponse("failed", "email already exist");
+      // throw new CustomResponse("failed", "email already exist");
+      throw new CustomResponse(
+        CustomResponse.STATUSES.fail,
+        "email already exist"
+      );
     }
     const hashedPassword = await bcrypt.createHash(validatedValue.password);
     const newUserData = await usersModule.insertUser(
@@ -23,7 +28,9 @@ router.post("/signup", async (req, res) => {
       validatedValue.phone
     );
     // res.json({ status: "ok", msg: "user created" });
-    res.json(new CustomResponse("ok", "user created"));
+    res.json(
+      new CustomResponse(CustomResponse.STATUSES.success, "user created")
+    );
   } catch (err) {
     console.log("err", err);
     res.json(err);
@@ -47,15 +54,25 @@ router.post("/login", async (req, res) => {
     const validatedValue = await usersValidation.validateLoginSchema(req.body);
     const usersData = await usersModule.selectUserByEmail(validatedValue.email);
     if (usersData.length <= 0) {
-      throw { status: "failed", msg: "invalid email or password" };
+      // throw { status: "failed", msg: "invalid email or password" };
+      throw new CustomResponse(
+        CustomResponse.STATUSES.fail,
+        "invalid email and/or password"
+      );
     }
     const hashRes = await bcrypt.cmpHash(
       validatedValue.password,
       usersData[0].password
     );
     if (!hashRes) {
-      throw { status: "failed", msg: "invalid email or password" };
+      // throw { status: "failed", msg: "invalid email or password" };
+      throw new CustomResponse(
+        CustomResponse.STATUSES.fail,
+        "invalid email and/or password"
+      );
     }
+    let token = await jwt.generateToken({ email: usersData[0].email });
+    res.json(new CustomResponse(CustomResponse.STATUSES.success, token));
   } catch (err) {
     res.json(err);
   }
