@@ -6,6 +6,7 @@ const bcrypt = require("../../config/bcrypt");
 const CustomResponse = require("../../classes/CustomResponse");
 const jwt = require("../../config/jwt");
 const generateRandomAlphaNumString = require("../../util/randomAlphaNum");
+const sendEmail = require("../../config/mailer");
 
 router.post("/signup", async (req, res) => {
   try {
@@ -97,6 +98,21 @@ router.post("/forgetpassword", async (req, res) => {
     //30 min * 60 sec * 1000 ms = 1800000 ms
     const expDate = new Date(Date.now() + 1800000);
     await usersModule.updateRecovery(validatedValue.email, secretKey, expDate);
+    sendEmail({
+      from: process.env.EMAIL_EMAIL,
+      to: validatedValue.email,
+      subject: "🦄your recovery email🦄",
+      html: `
+        <h1>your recovery link</h1>
+        <a href="${urlSecretKey}">here</a>
+      `,
+    });
+    res.json(
+      new CustomResponse(
+        CustomResponse.STATUSES.success,
+        "if the email exists, the mail was sent"
+      )
+    );
   } catch (err) {
     res.json(err);
   }
