@@ -8,6 +8,10 @@ const usersSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String },
+  recovery: {
+    secretKey: { type: String },
+    dateRecovery: { type: Date },
+  },
 });
 
 //create collection
@@ -26,6 +30,13 @@ const insertUser = (firstname, lastname, email, password, phone) => {
   return user.save();
 };
 
+const updateRecovery = (email, key, date) => {
+  return Users.updateOne(
+    { email },
+    { "recovery.secretKey": key, "recovery.dateRecovery": date }
+  );
+};
+
 const selectUserByEmail = (email) => {
   return Users.find({ email });
 };
@@ -33,4 +44,5 @@ const selectUserByEmail = (email) => {
 module.exports = {
   insertUser,
   selectUserByEmail,
+  updateRecovery,
 };
