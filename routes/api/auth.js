@@ -94,7 +94,8 @@ router.post("/forgetpassword", async (req, res) => {
       );
     }
     const secretKey = generateRandomAlphaNumString(4);
-    const urlSecretKey = `http://localhost:${process.env.PORT}/api/recoverpassword/${secretKey}`;
+    // const urlSecretKey = `http://localhost:${process.env.PORT}/api/recoverpassword/${secretKey}`;
+    const urlSecretKey = `http://localhost:3000/${secretKey}`;
     //30 min * 60 sec * 1000 ms = 1800000 ms
     const expDate = new Date(Date.now() + 1800000);
     await usersModule.updateRecovery(validatedValue.email, secretKey, expDate);
@@ -119,6 +120,6 @@ router.post("/forgetpassword", async (req, res) => {
 });
 
 router.get("/recoverpassword/:secretKey", (req, res) => {});
-router.get("/recoverpassword/:secretKey", (req, res) => {});
+router.post("/recoverpassword/:secretKey", (req, res) => {});
 
 module.exports = router;
