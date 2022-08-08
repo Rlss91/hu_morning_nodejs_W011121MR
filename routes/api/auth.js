@@ -143,6 +143,11 @@ router.post("/recoverpassword/:secretKey/:encryptedEmail", async (req, res) => {
         hashedPassword
       );
     }
+    /*
+    TODO:
+      check secretkey exp date
+      encrypt email and decrypt email
+    */
   } catch (err) {
     res.json(err);
   }
