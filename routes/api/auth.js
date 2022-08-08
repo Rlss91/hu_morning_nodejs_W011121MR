@@ -95,7 +95,7 @@ router.post("/forgetpassword", async (req, res) => {
     }
     const secretKey = generateRandomAlphaNumString(4);
     // const urlSecretKey = `http://localhost:${process.env.PORT}/api/recoverpassword/${secretKey}`;
-    const urlSecretKey = `http://localhost:3000/${secretKey}`;
+    const urlSecretKey = `http://localhost:3000/recoverpassword/${secretKey}/${validatedValue.email}`;
     //30 min * 60 sec * 1000 ms = 1800000 ms
     const expDate = new Date(Date.now() + 1800000);
     await usersModule.updateRecovery(validatedValue.email, secretKey, expDate);
@@ -119,8 +119,33 @@ router.post("/forgetpassword", async (req, res) => {
   }
 });
 
-router.post("/recoverpassword/:secretKey", (req, res) => {
-  res.json({ key: req.params.secretKey });
+router.post("/recoverpassword/:secretKey/:encryptedEmail", async (req, res) => {
+  try {
+    const validatedValue = await usersValidation.validateRecoveryPasswordSchema(
+      req.body
+    );
+    //dcrypt email - in the future
+    //dcrypted email validation - in the future
+    const usersData = await usersModule.selectUserByEmail(
+      req.params.encryptedEmail
+    );
+    if (usersData.length <= 0) {
+      // throw { status: "failed", msg: "invalid email or password" };
+      throw new CustomResponse(
+        CustomResponse.STATUSES.fail,
+        "something went wrong"
+      );
+    }
+    if (usersData[0].recovery.secretKey === req.params.secretKey) {
+      const hashedPassword = await bcrypt.createHash(validatedValue.password);
+      await usersModule.updatePassword(
+        req.params.encryptedEmail,
+        hashedPassword
+      );
+    }
+  } catch (err) {
+    res.json(err);
+  }
 });
 
 module.exports = router;

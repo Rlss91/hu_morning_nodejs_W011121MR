@@ -37,6 +37,10 @@ const updateRecovery = (email, key, date) => {
   );
 };
 
+const updatePassword = (email, password) => {
+  return Users.updateOne({ email }, { password, "recovery.secretKey": "" });
+};
+
 const selectUserByEmail = (email) => {
   return Users.find({ email });
 };
@@ -45,4 +49,5 @@ module.exports = {
   insertUser,
   selectUserByEmail,
   updateRecovery,
+  updatePassword,
 };
