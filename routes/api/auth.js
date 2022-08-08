@@ -119,7 +119,8 @@ router.post("/forgetpassword", async (req, res) => {
   }
 });
 
-router.get("/recoverpassword/:secretKey", (req, res) => {});
-router.post("/recoverpassword/:secretKey", (req, res) => {});
+router.post("/recoverpassword/:secretKey", (req, res) => {
+  res.json({ key: req.params.secretKey });
+});
 
 module.exports = router;
