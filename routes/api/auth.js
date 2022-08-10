@@ -7,6 +7,7 @@ const CustomResponse = require("../../classes/CustomResponse");
 const jwt = require("../../config/jwt");
 const generateRandomAlphaNumString = require("../../util/randomAlphaNum");
 const sendEmail = require("../../config/mailer");
+const crypto = require("../../config/crypto");
 
 router.post("/signup", async (req, res) => {
   try {
@@ -93,9 +94,11 @@ router.post("/forgetpassword", async (req, res) => {
         "if the email exists, the mail was sent"
       );
     }
-    const secretKey = generateRandomAlphaNumString(4);
+    const secretKey = generateRandomAlphaNumString(8);
+    const encryptedData = crypto.encrypt(validatedValue.email);
     // const urlSecretKey = `http://localhost:${process.env.PORT}/api/recoverpassword/${secretKey}`;
-    const urlSecretKey = `http://localhost:3000/recoverpassword/${secretKey}/${validatedValue.email}`;
+    // const urlSecretKey = `http://localhost:3000/recoverpassword/${secretKey}/${validatedValue.email}`;
+    const urlSecretKey = `http://localhost:3000/recoverpassword/${secretKey}/${encryptedData.iv}/${encryptedData.encryptedData}`;
     //30 min * 60 sec * 1000 ms = 1800000 ms
     const expDate = new Date(Date.now() + 1800000);
     await usersModule.updateRecovery(validatedValue.email, secretKey, expDate);
@@ -119,38 +122,66 @@ router.post("/forgetpassword", async (req, res) => {
   }
 });
 
-router.post("/recoverpassword/:secretKey/:encryptedEmail", async (req, res) => {
-  try {
-    const validatedValue = await usersValidation.validateRecoveryPasswordSchema(
-      req.body
-    );
-    //dcrypt email - in the future
-    //dcrypted email validation - in the future
-    const usersData = await usersModule.selectUserByEmail(
-      req.params.encryptedEmail
-    );
-    if (usersData.length <= 0) {
-      // throw { status: "failed", msg: "invalid email or password" };
-      throw new CustomResponse(
-        CustomResponse.STATUSES.fail,
-        "something went wrong"
+router.post(
+  "/recoverpassword/:secretKey/:iv/:encryptedData",
+  async (req, res) => {
+    try {
+      const validatedValue =
+        await usersValidation.validateRecoveryPasswordSchema(req.body);
+      /*
+        get data from params
+        decrypt the data from params
+        if it success then we will get email
+        else we will get ^&*%$&^%
+      */
+      const decryptedEmail = crypto.decrypt({
+        iv: req.params.iv,
+        encryptedData: req.params.encryptedData,
+      });
+      /*
+        check if it success or fail
+      */
+      const validateEmail =
+        await usersValidation.validateRecoveryPasswordValidateEmailSchema({
+          email: decryptedEmail,
+        });
+      const usersData = await usersModule.selectUserByEmail(
+        validateEmail.email
       );
-    }
-    if (usersData[0].recovery.secretKey === req.params.secretKey) {
+      if (usersData.length <= 0) {
+        // throw { status: "failed", msg: "invalid email or password" };
+        throw new CustomResponse(
+          CustomResponse.STATUSES.fail,
+          "something went wrong"
+        );
+      }
+      if (usersData[0].recovery.secretKey !== req.params.secretKey) {
+        throw new CustomResponse(
+          CustomResponse.STATUSES.fail,
+          "something went wrong"
+        );
+      }
+      const nowDT = new Date();
+      /*
+        get the date and time now and convert it to number
+        get the exp date from database and convert it to number
+        if the number from the db smaller then now then the revocery expired
+      */
+      if (nowDT.getTime() > usersData[0].recovery.dateRecovery.getTime()) {
+        throw new CustomResponse(
+          CustomResponse.STATUSES.fail,
+          "something went wrong"
+        );
+      }
       const hashedPassword = await bcrypt.createHash(validatedValue.password);
-      await usersModule.updatePassword(
-        req.params.encryptedEmail,
-        hashedPassword
+      await usersModule.updatePassword(validateEmail.email, hashedPassword);
+      res.json(
+        new CustomResponse(CustomResponse.STATUSES.success, "password updated")
       );
+    } catch (err) {
+      res.json(err);
     }
-    /*
-    TODO:
-      check secretkey exp date
-      encrypt email and decrypt email
-    */
-  } catch (err) {
-    res.json(err);
   }
-});
+);
 
 module.exports = router;
