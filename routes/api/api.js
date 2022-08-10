@@ -1,11 +1,16 @@
 const express = require("express");
 const router = express.Router();
+
+const authMiddleware = require("../../middleware/auth.middleware");
+const superAdminMiddleware = require("../../middleware/superAdmin.middleware");
+
 const usersRouter = require("./users");
 const animalsRouter = require("./animals");
 const authRouter = require("./auth");
 
 // http://localhost:3001/api/
-router.get("/", (req, res) => {
+router.get("/", authMiddleware, superAdminMiddleware, (req, res) => {
+  console.log(req.userData);
   res.json({ msg: "hello!" });
 });
 // // http://localhost:3001/api/animals
