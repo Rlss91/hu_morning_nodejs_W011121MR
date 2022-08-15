@@ -7,6 +7,7 @@ const superAdminMiddleware = require("../../middleware/superAdmin.middleware");
 const usersRouter = require("./users");
 const animalsRouter = require("./animals");
 const authRouter = require("./auth");
+const productsRouter = require("./products");
 
 // http://localhost:3001/api/
 router.get("/", authMiddleware, superAdminMiddleware, (req, res) => {
@@ -26,5 +27,8 @@ router.use("/animals", animalsRouter);
 
 //http://localhost:3001/api/auth
 router.use("/auth", authRouter);
+
+//http://localhost:3001/api/products
+router.use("/products", productsRouter);
 
 module.exports = router;
