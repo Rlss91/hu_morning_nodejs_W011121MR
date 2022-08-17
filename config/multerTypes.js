@@ -100,7 +100,7 @@ const allowedTypes = {
   any: "any",
 };
 
-const createMulter = (uploadTo, fileSize, typeOptions = allowedTypes.any) => {
+const filterFileType = (file, cb, typeOptions = allowedTypes.any) => {
   try {
     if (typeof typeOptions !== "object") {
       throw new Error("typeOptions is not an object");
@@ -162,13 +162,13 @@ const createMulter = (uploadTo, fileSize, typeOptions = allowedTypes.any) => {
         ];
         break;
       case allowedTypes.custom:
-        if (!types.hasOwnProperty("customFormats")) {
+        if (!typeOptions.hasOwnProperty("customFormats")) {
           throw new Error("customFormats is missing");
         }
-        if (!Array.isArray(types.customFormats)) {
+        if (!Array.isArray(typeOptions.customFormats)) {
           throw new Error("customFormats should be an array");
         }
-        allowedFormats = types.customFormats;
+        allowedFormats = typeOptions.customFormats;
         break;
       case allowedTypes.any:
         cb(null, true);
@@ -184,5 +184,9 @@ const createMulter = (uploadTo, fileSize, typeOptions = allowedTypes.any) => {
 
 module.exports = {
   allowedTypes,
-  createMulter,
+  createMulter: (uploadTo, fileSize, typeOptions) => {
+    return multer(uploadTo, fileSize, (req, file, cb) => {
+      filterFileType(file, cb, typeOptions);
+    });
+  },
 };

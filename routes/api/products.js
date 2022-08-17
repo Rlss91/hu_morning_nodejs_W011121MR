@@ -3,28 +3,14 @@ const express = require("express");
 const router = express.Router();
 // const multer = require("multer");
 // const uploadMulter = multer({ dest: "uploads/" });
-const multer = require("../../config/multer");
-const uploadMulter = multer("uploads/", 3000000, (req, file, cb) => {
-  const allowedFormats = [
-    "image/apng",
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/svg+xml",
-    "image/webp",
-  ];
-  // if (allowedFormats.includes(file.mimetype)) {
-  //   cb(null, true);
-  // } else {
-  //   cb(null, false);
-  // }
-  cb(null, allowedFormats.includes(file.mimetype));
+const multer = require("../../config/multerTypes");
+const uploadMulter = multer.createMulter("uploads/", 3000000, {
+  type: multer.allowedTypes.img,
 });
-const uploadMulter = multer("uploads/", 3000000, {
-  type: 5,
-  myTypes: ["jsadf", "asdf", "asdfsdf"],
-});
+// const uploadCustomeMulter = multer.createMulter("uploads/", 3000000, {
+//   type: multer.allowedTypes.custom,
+//   customFormats: ["image/jpeg", "image/png"],
+// });
 const productsModel = require("../../models/products.model");
 const productsValidation = require("../../validation/products.validation");
 const authMiddleware = require("../../middleware/auth.middleware");
