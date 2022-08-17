@@ -21,6 +21,10 @@ const uploadMulter = multer("uploads/", 3000000, (req, file, cb) => {
   // }
   cb(null, allowedFormats.includes(file.mimetype));
 });
+const uploadMulter = multer("uploads/", 3000000, {
+  type: 5,
+  myTypes: ["jsadf", "asdf", "asdfsdf"],
+});
 const productsModel = require("../../models/products.model");
 const productsValidation = require("../../validation/products.validation");
 const authMiddleware = require("../../middleware/auth.middleware");
