@@ -53,27 +53,33 @@ router.get("/", async (req, res) => {
 //     }
 //   }
 // );
-router.post("/", uploadMulter.single("prudImg"), async (req, res) => {
-  try {
-    console.log(req.file);
-    const validatedValue = await productsValidation.validateNewProductSchema(
-      req.body
-    );
-    await productsModel.insertProduct(
-      validatedValue.name,
-      validatedValue.price,
-      validatedValue.description,
-      validatedValue.stock,
-      req.file.filename,
-      "62f39f551f94db9e3ef5137f"
-    );
-    res.json(
-      new CustomResponse(CustomResponse.STATUSES.success, "new product added")
-    );
-  } catch (err) {
-    fs.unlink(req.file.path);
-    res.status(401).json(err);
+router.post(
+  "/",
+  authMiddleware,
+  sellerMiddleware,
+  uploadMulter.single("prudImg"),
+  async (req, res) => {
+    try {
+      console.log(req.file);
+      const validatedValue = await productsValidation.validateNewProductSchema(
+        req.body
+      );
+      await productsModel.insertProduct(
+        validatedValue.name,
+        validatedValue.price,
+        validatedValue.description,
+        validatedValue.stock,
+        req.file.filename,
+        "62f39f551f94db9e3ef5137f"
+      );
+      res.json(
+        new CustomResponse(CustomResponse.STATUSES.success, "new product added")
+      );
+    } catch (err) {
+      fs.unlink(req.file.path);
+      res.status(401).json(err);
+    }
   }
-});
+);
 
 module.exports = router;
