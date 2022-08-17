@@ -1,7 +1,7 @@
 const Joi = require("joi");
 
 const nameRole = {
-  name: Joi.string().min(2).max(255).alphanum().trim().required(),
+  name: Joi.string().min(2).max(255).trim().required(),
 };
 const priceRole = {
   price: Joi.number().min(Number.MIN_VALUE).required(),

@@ -18,7 +18,7 @@ const multer = require("multer");
 //   limits: { fileSize: 300000 }, //file size limit 3mb+-
 // });
 
-const createMulter = (uploadTo, fileSize) => {
+const createMulter = (uploadTo, fileSize, fileFilterFunc) => {
   const multerConfig = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, uploadTo);
@@ -33,6 +33,7 @@ const createMulter = (uploadTo, fileSize) => {
   return multer({
     storage: multerConfig,
     limits: { fileSize },
+    fileFilter: fileFilterFunc,
   });
 };
 
