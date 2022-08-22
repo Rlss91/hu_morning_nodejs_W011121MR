@@ -70,7 +70,7 @@ router.post(
         validatedValue.description,
         validatedValue.stock,
         req.file.filename,
-        "62f39f551f94db9e3ef5137f"
+        req.userData._id
       );
       res.json(
         new CustomResponse(CustomResponse.STATUSES.success, "new product added")

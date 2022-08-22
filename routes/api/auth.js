@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const logger = require("../../config/winston");
 const usersModule = require("../../models/users.model");
 const usersValidation = require("../../validation/users.validation");
 const bcrypt = require("../../config/bcrypt");
@@ -89,6 +90,7 @@ router.post("/forgetpassword", async (req, res) => {
     const usersData = await usersModule.selectUserByEmail(validatedValue.email);
     if (usersData.length <= 0) {
       // throw { status: "failed", msg: "invalid email or password" };
+      logger.error(`cant find this email:${validatedValue.email}`);
       throw new CustomResponse(
         CustomResponse.STATUSES.success,
         "if the email exists, the mail was sent"
@@ -111,6 +113,7 @@ router.post("/forgetpassword", async (req, res) => {
         <a href="${urlSecretKey}">here</a>
       `,
     });
+    logger.info(`mail sent to: ${validatedValue.email}`);
     res.json(
       new CustomResponse(
         CustomResponse.STATUSES.success,
@@ -150,12 +153,16 @@ router.post(
       );
       if (usersData.length <= 0) {
         // throw { status: "failed", msg: "invalid email or password" };
+        logger.error(`email not exists, ${validatedValue.email}`);
         throw new CustomResponse(
           CustomResponse.STATUSES.fail,
           "something went wrong"
         );
       }
       if (usersData[0].recovery.secretKey !== req.params.secretKey) {
+        logger.error(
+          `user with email ${validatedValue.email} provied wrong key:${req.params.secretKey}`
+        );
         throw new CustomResponse(
           CustomResponse.STATUSES.fail,
           "something went wrong"
@@ -168,6 +175,7 @@ router.post(
         if the number from the db smaller then now then the revocery expired
       */
       if (nowDT.getTime() > usersData[0].recovery.dateRecovery.getTime()) {
+        logger.error(`${validatedValue.email} recovery key exipered`);
         throw new CustomResponse(
           CustomResponse.STATUSES.fail,
           "something went wrong"
